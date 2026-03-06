@@ -104,7 +104,34 @@ class NaukriAutomation(BaseAutomationEngine):
         except Exception as e:
             print(f"Error handling popups: {e}")
 
-    def apply_to_jobs(self, resume_text: str, match_threshold: float) -> list:
+    def handle_questions(self, page, user_profile: dict):
+        """Attempts to answer simple text questions on the Naukri application modal."""
+        if not user_profile:
+            return
+
+        try:
+            # Common keywords in questions
+            questions = page.locator(".qna-container .qna-item")
+            for i in range(questions.count()):
+                q_text = questions.nth(i).inner_text().lower()
+                input_field = questions.nth(i).locator("input[type='text']")
+
+                if input_field.count() > 0 and input_field.is_visible():
+                    if "experience" in q_text and user_profile.get("experience"):
+                        input_field.fill(user_profile["experience"])
+                    elif "ctc" in q_text or "salary" in q_text and user_profile.get("ctc"):
+                        # Extract just the numbers from CTC string if possible, or use raw
+                        input_field.fill(user_profile["ctc"])
+
+            # Click save/submit if it exists on the QnA modal
+            submit_qna = page.locator("button:has-text('Save'), button:has-text('Submit')")
+            if submit_qna.count() > 0 and submit_qna.is_visible():
+                submit_qna.first.click()
+                self.random_delay(1, 2)
+        except Exception as e:
+            print(f"Failed to handle questions: {e}")
+
+    def apply_to_jobs(self, resume_text: str, match_threshold: float, user_profile: dict = None) -> list:
         """
         Iterates through jobs on the current page, extracts JD, scores it,
         and applies if it meets the threshold. Uses the class's rate limit.
@@ -158,6 +185,10 @@ class NaukriAutomation(BaseAutomationEngine):
                         if apply_button.count() > 0 and apply_button.is_visible():
                             apply_button.click()
                             self.random_delay(2, 4)
+
+                            # Handle QnA modals if present
+                            self.handle_questions(new_page, user_profile)
+                            self.random_delay(1, 3)
 
                             # Check for success or complex popups requiring answers
                             if new_page.locator("text='successfully applied'").count() > 0 or new_page.locator(".apply-message").count() > 0:

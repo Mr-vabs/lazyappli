@@ -1,16 +1,18 @@
 # OpenApply-India
 
-OpenApply-India is a Free and Open Source (FOSS) Python-based automation tool that streamlines the job application process on major Indian job boards (currently supporting Naukri.com). The tool intelligently matches your resume to job descriptions and automates the "Easy Apply" process for relevant roles.
+OpenApply-India is a Free and Open Source (FOSS) Python-based automation tool that streamlines the job application process on major Indian job boards (currently supporting Naukri.com and Indeed.co.in). The tool intelligently matches your resume to job descriptions and automates the "Easy Apply" process for relevant roles.
 
 ## Features
 
-*   **User Input Module:** Accepts your PDF resume and input fields for Target Role, Preferred Locations, Expected CTC, and a Match Score threshold.
+*   **Web Interface (Streamlit):** Accessible via desktop or mobile devices (Android/iOS) over your local network. Allows you to build your profile, upload your resume, and track live application logs.
+*   **User Input Module:** Accepts your PDF resume and input fields for Target Role, Preferred Locations, Expected CTC, Experience, and a Match Score threshold.
 *   **Smart Filtering:** Uses a local, lightweight TF-IDF matching algorithm (`scikit-learn`) to calculate a "Match Score" between your resume text and the Job Description (JD). It only applies if the score exceeds your defined threshold.
 *   **Platform Integration & Automation Engine:**
-    *   Automated login and session management.
+    *   Automated login and session management for Naukri and Indeed.
     *   Navigates search results and handles pagination.
     *   Implements stealth techniques like human-like typing delays and random mouse movements to avoid bot detection.
     *   Handles common pop-ups to ensure a smooth "Easy Apply" experience.
+    *   Attempts to answer common application questions automatically based on your created profile.
 *   **Rate Limiting & Reporting:** Caps applications at 50 per session to protect your account and generates an `applications_log.csv` tracking your applied jobs.
 
 ## Prerequisites
@@ -51,46 +53,32 @@ The tool requires your login credentials to apply on your behalf. **Never hardco
     cp .env.example .env
     ```
 
-2.  Open the `.env` file and add your Naukri credentials:
+2.  Open the `.env` file and add your credentials:
     ```env
     NAUKRI_EMAIL="your.email@example.com"
     NAUKRI_PASSWORD="your_secure_password"
+    INDEED_EMAIL="your.email@example.com"
+    INDEED_PASSWORD="your_secure_password"
+    ```
+    *Note: If `INDEED_*` variables are missing, the tool will attempt to use your Naukri credentials for Indeed.*
+
+## Usage (Web UI)
+
+OpenApply-India now uses a Streamlit Web UI.
+
+1.  **Start the server:**
+    ```bash
+    streamlit run app.py
     ```
 
-## Usage
+2.  **Access on Desktop:**
+    Open your browser and navigate to `http://localhost:8501`.
 
-You can run the tool from your command line using the `cli.py` entry point.
-
-**Basic Application Run:**
-
-```bash
-python src/cli.py --resume path/to/your/resume.pdf --role "Software Engineer" --ctc "15-20 LPA"
-```
-
-**Advanced Run (with location, custom threshold, and supervised mode):**
-
-By default, the automation runs in the background. If you want to supervise the first few applications to ensure everything works smoothly, you can disable headless mode using the `--headless` flag (wait, Typer makes it a boolean flag. Omit `--headless` to see the browser, add it to run silently... Actually, based on the Typer setup, you provide `--headless` to run headlessly, otherwise it defaults to showing the browser so you can supervise).
-
-```bash
-python src/cli.py \
-  --resume my_resume.pdf \
-  --role "Data Scientist" \
-  --location "Bangalore" \
-  --ctc "20 LPA" \
-  --threshold 75.0 \
-  --headless
-```
-
-### CLI Arguments
-
-| Argument | Short | Description | Default |
-| :--- | :--- | :--- | :--- |
-| `--resume` | `-r` | Path to your PDF resume. | **Required** |
-| `--role` | `-t` | Target role (e.g., 'Software Engineer'). | **Required** |
-| `--ctc` | `-c` | Expected CTC (e.g., '10-15 LPA'). | **Required** |
-| `--location` | `-l` | Preferred location. | `"India"` |
-| `--threshold` | `-m` | Match threshold percentage (0-100) to apply. | `70.0` |
-| `--headless` | | Run the browser in the background without a UI. | `False` |
+3.  **Access on Android/Mobile Device:**
+    *   Ensure your computer and mobile device are connected to the same Wi-Fi network.
+    *   When you run `streamlit run app.py`, the terminal will display a **Network URL** (e.g., `http://192.168.1.5:8501`).
+    *   Open your Android phone's browser (Chrome/Safari) and go to that Network URL.
+    *   You can now configure your profile, upload your resume from your phone, and trigger the bot running on your computer!
 
 ## Output
 
