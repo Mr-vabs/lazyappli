@@ -1,0 +1,7 @@
+playwright
+PyMuPDF
+scikit-learn
+python-dotenv
+pandas
+typer
+pytest
